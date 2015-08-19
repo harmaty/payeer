@@ -66,7 +66,7 @@ class Payeer
     logger.info "Response: #{json_response.inspect}"
 
     raise AuthError if json_response["auth_error"].to_i > 0
-    raise ApiError, "API errors: #{response["errors"].inspect}" if json_response["errors"]
+    raise ApiError, "API errors: #{json_response["errors"].inspect}" if json_response["errors"]
     json_response
   end
 
