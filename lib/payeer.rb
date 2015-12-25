@@ -10,7 +10,7 @@ class Payeer
   class ApiError < Exception
   end
 
-  attr_accessor :account, :api_id, :api_secret, :language, :logger
+  attr_accessor :account, :api_id, :api_secret, :config, :logger
 
   DEFAULTS = {
       language: 'ru'
@@ -60,13 +60,13 @@ class Payeer
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     request = Net::HTTP::Post.new(uri.request_uri)
     request.set_form_data(prepare_params(options))
-    logger.info "Request url: #{uri}, payload: #{prepare_params(options)}"
+    logger.info "Payeer API Request url: #{uri}, payload: #{prepare_params(options)}"
     response = http.request(request)
     json_response = JSON.parse(response.body)
-    logger.info "Response: #{json_response.inspect}"
+    logger.info "Payeer API Response: #{json_response.inspect}"
 
     raise AuthError if json_response["auth_error"].to_i > 0
-    raise ApiError, "API errors: #{json_response["errors"].inspect}" if json_response["errors"]
+    raise ApiError, json_response["errors"].inspect if json_response["errors"] && json_response["errors"].any?
     json_response
   end
 
@@ -75,7 +75,7 @@ class Payeer
         account: account,
         apiId: api_id,
         apiPass: api_secret,
-        lang: language
+        lang: config[:language]
     }
     params.merge(auth)
   end
